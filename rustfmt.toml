@@ -1,7 +1,7 @@
 # Basic
 edition = "2021"
 hard_tabs = false
-max_width = 100
+max_width = 80
 use_small_heuristics = "Max"
 # Imports
 imports_granularity = "Crate"
@@ -19,5 +19,5 @@ match_block_trailing_comma = true
 trailing_comma = "Vertical"
 use_field_init_shorthand = true
 # Format comments
-comment_width = 100
+comment_width = 80
 wrap_comments = true
