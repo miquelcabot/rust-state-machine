@@ -17,6 +17,11 @@ impl system::Config for Runtime {
     type Nonce = types::Nonce;
 }
 
+impl balances::Config for Runtime {
+    type AccountID = types::AccountID;
+    type Balance = types::Balance;
+}
+
 /*
     TODO:
     Implement the `system::Config` trait you created on your `Runtime`.
@@ -28,7 +33,7 @@ impl system::Config for Runtime {
 #[derive(Debug)]
 pub struct Runtime {
     system: system::Pallet<Self>,
-    balances: balances::Pallet<types::AccountID, types::Balance>,
+    balances: balances::Pallet<Self>,
 }
 
 impl Runtime {
