@@ -67,7 +67,7 @@ impl Runtime {
             block.extrinsics.into_iter().enumerate()
         {
             self.system.inc_nonce(&caller);
-            let _ = self.dispatch(caller, call).map_err(|e| 
+            let _ = self.dispatch(caller, call).map_err(|e|
               eprintln!(
                 "Extrinsic Error\n\tBlock Number: {}\n\tExtrinsic Number: {}\n\tError: {}",
                 self.system.block_number(), i, e
