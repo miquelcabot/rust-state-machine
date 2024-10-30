@@ -91,16 +91,18 @@ impl support::Dispatch for Runtime {
         caller: Self::Caller,
         runtime_call: Self::Call,
     ) -> support::DispatchResult {
-      match runtime_call {
-        RuntimeCall::BalancesTransfer { to, amount } => {
-          self.balances.transfer(&caller, &to, amount)?;
+        match runtime_call {
+            RuntimeCall::BalancesTransfer { to, amount } => {
+                self.balances.transfer(&caller, &to, amount)?;
+            },
         }
-      }
-      Ok(())
+        Ok(())
     }
 }
 
 fn main() {
+    // Create a new instance of the Runtime.
+    // It will instantiate with it all the modules it uses.
     let mut runtime = Runtime::new();
 
     // initialize some accounts
@@ -110,23 +112,28 @@ fn main() {
 
     runtime.balances.set_balance(&alice, 100);
 
-    // start emulating a block
-    runtime.system.inc_block_number();
-    assert_eq!(runtime.system.block_number(), 1);
+    let block_1 = types::Block {
+        header: support::Header { block_number: 1 },
+        extrinsics: vec![
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::BalancesTransfer {
+                    to: bob.clone(),
+                    amount: 30,
+                },
+            },
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::BalancesTransfer {
+                    to: charlie.clone(),
+                    amount: 20,
+                },
+            },
+        ],
+    };
 
-    // first transaction
-    runtime.system.inc_nonce(&alice);
-    let _ = runtime
-        .balances
-        .transfer(&alice, &bob, 30)
-        .map_err(|e| println!("Error: {:?}", e));
+    runtime.execute_block(block_1).expect("invalid block");
 
-    // second transaction
-    runtime.system.inc_nonce(&alice);
-    let _ = runtime
-        .balances
-        .transfer(&alice, &charlie, 20)
-        .map_err(|e| println!("Error: {:?}", e));
-
+    // Simply print the debug format of our runtime state.
     println!("{:#?}", runtime);
 }
