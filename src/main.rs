@@ -22,7 +22,7 @@ mod types {
 // These are all the calls which are exposed to the world.
 // Note that it is just an accumulation of the calls exposed by each module.
 pub enum RuntimeCall {
-    // TODO: Not implemented yet.
+    BalancesTransfer { to: types::AccountId, amount: types::Balance },
 }
 
 // This is our main Runtime.
@@ -91,7 +91,12 @@ impl support::Dispatch for Runtime {
         caller: Self::Caller,
         runtime_call: Self::Call,
     ) -> support::DispatchResult {
-        unimplemented!();
+      match runtime_call {
+        RuntimeCall::BalancesTransfer { to, amount } => {
+          self.balances.transfer(&caller, &to, amount)?;
+        }
+      }
+      Ok(())
     }
 }
 
