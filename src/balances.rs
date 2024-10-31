@@ -30,14 +30,17 @@ impl<T: Config> Pallet<T> {
     pub fn balance(&self, who: &T::AccountId) -> T::Balance {
         *self.balances.get(who).unwrap_or(&T::Balance::zero())
     }
+}
 
+#[macros::call]
+impl<T: Config> Pallet<T> {
     /// Transfer `amount` from one account to another.
     /// This function verifies that `caller` has at least `amount` balance to transfer,
     /// and that no mathematical overflows occur.
     pub fn transfer(
         &mut self,
-        caller: &T::AccountId,
-        to: &T::AccountId,
+        caller: T::AccountId,
+        to: T::AccountId,
         amount: T::Balance,
     ) -> Result<(), &'static str> {
         let caller_balance = self.balance(&caller);
@@ -54,33 +57,6 @@ impl<T: Config> Pallet<T> {
         self.set_balance(&caller, new_caller_balance);
         self.set_balance(&to, new_to_balance);
 
-        Ok(())
-    }
-}
-
-// A public enum which describes the calls we want to expose to the dispatcher.
-// We should expect that the caller of each call will be provided by the dispatcher,
-// and not included as a parameter of the call.
-pub enum Call<T: Config> {
-    Transfer { to: T::AccountId, amount: T::Balance },
-}
-
-/// Implementation of the dispatch logic, mapping from `BalancesCall` to the appropriate underlying
-/// function we want to execute.
-impl<T: Config> crate::support::Dispatch for Pallet<T> {
-    type Caller = T::AccountId;
-    type Call = Call<T>;
-
-    fn dispatch(
-        &mut self,
-        caller: Self::Caller,
-        call: Self::Call,
-    ) -> crate::support::DispatchResult {
-        match call {
-            Call::Transfer { to, amount } => {
-                self.transfer(&caller, &to, amount)?
-            },
-        }
         Ok(())
     }
 }
@@ -113,50 +89,50 @@ mod tests {
 
     #[test]
     fn transfer_balance() {
-        let alice = &"alice".to_string();
-        let bob = &"bob".to_string();
+        let alice = "alice".to_string();
+        let bob = "bob".to_string();
 
         let mut balances = super::Pallet::<TestConfig>::new();
 
-        balances.set_balance(alice, 100);
+        balances.set_balance(&alice, 100);
 
-        assert_eq!(balances.transfer(alice, bob, 90), Ok(()));
-        assert_eq!(balances.balance(alice), 10);
-        assert_eq!(balances.balance(bob), 90);
+        assert_eq!(balances.transfer(alice.clone(), bob.clone(), 90), Ok(()));
+        assert_eq!(balances.balance(&alice), 10);
+        assert_eq!(balances.balance(&bob), 90);
     }
 
     #[test]
     fn transfer_insufficient_balance() {
-        let alice = &"alice".to_string();
-        let bob = &"bob".to_string();
+        let alice = "alice".to_string();
+        let bob = "bob".to_string();
 
         let mut balances = super::Pallet::<TestConfig>::new();
 
-        balances.set_balance(alice, 100);
+        balances.set_balance(&alice, 100);
 
         assert_eq!(
-            balances.transfer(alice, bob, 110),
+            balances.transfer(alice.clone(), bob.clone(), 110),
             Err("Insufficient balance")
         );
-        assert_eq!(balances.balance(alice), 100);
-        assert_eq!(balances.balance(bob), 0);
+        assert_eq!(balances.balance(&alice), 100);
+        assert_eq!(balances.balance(&bob), 0);
     }
 
     #[test]
     fn transfer_overflow() {
-        let alice = &"alice".to_string();
-        let bob = &"bob".to_string();
+        let alice = "alice".to_string();
+        let bob = "bob".to_string();
 
         let mut balances = super::Pallet::<TestConfig>::new();
 
-        balances.set_balance(alice, 100);
-        balances.set_balance(bob, u128::MAX);
+        balances.set_balance(&alice, 100);
+        balances.set_balance(&bob, u128::MAX);
 
         assert_eq!(
-            balances.transfer(alice, bob, 1),
+            balances.transfer(alice.clone(), bob.clone(), 1),
             Err("Overflow when adding to balance")
         );
-        assert_eq!(balances.balance(alice), 100);
-        assert_eq!(balances.balance(bob), u128::MAX);
+        assert_eq!(balances.balance(&alice), 100);
+        assert_eq!(balances.balance(&bob), u128::MAX);
     }
 }
