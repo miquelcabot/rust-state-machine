@@ -17,7 +17,7 @@ pub struct Pallet<T: Config> {
 impl<T: Config> Pallet<T> {
     /// Create a new instance of the balances module.
     pub fn new() -> Self {
-        Pallet { balances: BTreeMap::new() }
+        Self { balances: BTreeMap::new() }
     }
 
     /// Set the balance of an account `who` to some `amount`.
