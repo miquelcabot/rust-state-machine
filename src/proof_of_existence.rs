@@ -29,7 +29,10 @@ impl<T: Config> Pallet<T> {
     pub fn get_claim(&self, claim: &T::Content) -> Option<&T::AccountId> {
         self.claims.get(claim)
     }
+}
 
+#[macros::call]
+impl<T: Config> Pallet<T> {
     /// Create a new claim on behalf of the `caller`.
     /// This function will return an error if someone already has claimed that content.
     pub fn create_claim(
@@ -63,32 +66,6 @@ impl<T: Config> Pallet<T> {
 
         self.claims.remove(&claim);
         Ok(())
-    }
-}
-
-// A public enum which describes the calls we want to expose to the dispatcher.
-// We should expect that the caller of each call will be provided by the dispatcher,
-// and not included as a parameter of the call.
-pub enum Call<T: Config> {
-    CreateClaim { claim: T::Content },
-    RevokeClaim { claim: T::Content },
-}
-
-/// Implementation of the dispatch logic, mapping from `POECall` to the appropriate underlying
-/// function we want to execute.
-impl<T: Config> crate::support::Dispatch for Pallet<T> {
-    type Caller = T::AccountId;
-    type Call = Call<T>;
-
-    fn dispatch(
-        &mut self,
-        caller: Self::Caller,
-        call: Self::Call,
-    ) -> DispatchResult {
-        match call {
-            Call::CreateClaim { claim } => self.create_claim(caller, claim),
-            Call::RevokeClaim { claim } => self.revoke_claim(caller, claim),
-        }
     }
 }
 
@@ -126,13 +103,5 @@ mod test {
         let res = poe.revoke_claim("alice", "my_document");
         assert_eq!(res, Ok(()));
         assert_eq!(poe.get_claim(&"my_document"), None);
-
-        /*
-            TODO:
-            Create an end to end test verifying the basic functionality of this pallet.
-                - Check the initial state is as you expect.
-                - Check that all functions work successfully.
-                - Check that all error conditions error as expected.
-        */
     }
 }

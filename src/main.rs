@@ -154,7 +154,7 @@ fn main() {
             support::Extrinsic {
                 caller: alice.clone(),
                 call: RuntimeCall::ProofOfExistence(
-                    proof_of_existence::Call::CreateClaim {
+                    proof_of_existence::Call::create_claim {
                         claim: "my_document",
                     },
                 ),
@@ -162,7 +162,7 @@ fn main() {
             support::Extrinsic {
                 caller: bob.clone(),
                 call: RuntimeCall::ProofOfExistence(
-                    proof_of_existence::Call::CreateClaim {
+                    proof_of_existence::Call::create_claim {
                         claim: "bobs document",
                     },
                 ),
