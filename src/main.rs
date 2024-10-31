@@ -130,21 +130,47 @@ fn main() {
             support::Extrinsic {
                 caller: alice.clone(),
                 call: RuntimeCall::Balances(balances::Call::Transfer {
-                    to: bob,
+                    to: bob.clone(),
                     amount: 30,
                 }),
             },
             support::Extrinsic {
                 caller: alice.clone(),
                 call: RuntimeCall::Balances(balances::Call::Transfer {
-                    to: charlie,
+                    to: charlie.clone(),
                     amount: 20,
                 }),
             },
         ],
     };
 
+    // Execute the extrinsics which make up our block.
+    // If there are any errors, our system panics, since we should not execute invalid blocks.
     runtime.execute_block(block_1).expect("invalid block");
+
+    let block_2 = types::Block {
+        header: support::Header { block_number: 2 },
+        extrinsics: vec![
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::ProofOfExistence(
+                    proof_of_existence::Call::CreateClaim {
+                        claim: "my_document",
+                    },
+                ),
+            },
+            support::Extrinsic {
+                caller: bob.clone(),
+                call: RuntimeCall::ProofOfExistence(
+                    proof_of_existence::Call::CreateClaim {
+                        claim: "bobs document",
+                    },
+                ),
+            },
+        ],
+    };
+
+    runtime.execute_block(block_2).expect("invalid block");
 
     // Simply print the debug format of our runtime state.
     println!("{:#?}", runtime);
